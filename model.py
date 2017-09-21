@@ -1,7 +1,10 @@
+from __future__ import print_function
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.nn.init as init
 from torch.autograd import Variable
+from util import xavier_uniform
 
 class NeuralFingerprint(nn.Module):
 	def __init__(self, paras):
@@ -12,9 +15,17 @@ class NeuralFingerprint(nn.Module):
 		self.output_fp = {i: nn.Linear(paras.F, paras.L) for i in range(paras.R)}
 		self.output_cl = nn.Linear(paras.L, paras.num_class)
 
+	def weight_init(self):
+		xavier_uniform(self.embedding)
+		for _, hidden in self.hidden:
+			init.xavier_normal(hidden)
+		for _, output in self.output_fp:
+			init.xavier_normal(output)
+		init.xavier_normal(self.output_cl)
+
 	def forward(self, graph):
 		f = Variable(torch.FloatTensor(self.paras.L).zero_(), requires_grad=True)
-		embedding = F.torch.unsqueeze(self.embedding(Variable(torch.from_numpy(graph.node_feature))), 1)
+		embedding = self.embedding(Variable(torch.from_numpy(graph.node_feature)))
 		for L in range(self.paras.R):
 			tmp_embedding = []
 			# graph.nodes must be a sorted list
@@ -26,6 +37,5 @@ class NeuralFingerprint(nn.Module):
 				tmp_embedding.append(r)
 				i = F.softmax(self.output_fp[L](r))
 				f = torch.add(f, i)
-			for i, r in enumerate(tmp_embedding):
-				embedding[i] = r
-		return F.softmax(self.output_cl(f))
+			embedding = torch.stack(tmp_embedding, 0)
+		return F.log_softmax(self.output_cl(f))

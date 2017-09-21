@@ -1,3 +1,4 @@
+from __future__ import print_function
 import pickle
 import torch
 import numpy as np
@@ -67,7 +68,17 @@ class Predictor(object):
 			for i in tqdm(range(len(self.data)), ncols=100):
 				graph = self.data[i]
 				optimizer.zero_grad()
-				output = self.model(graph)
-				loss = F.cross_entropy(output, Variable(torch.from_numpy(graph.label)))
+				output = self.model(graph).unsqueeze(0)
+				target = Variable(torch.from_numpy(graph.label))
+				loss = F.nll_loss(output, target)
 				loss.backward()
 				optimizer.step()
+
+	def test(self):
+		correct = 0.0
+		for i in tqdm(range(len(self.data)), ncols=100):
+			graph = self.data[i]
+			target = torch.from_numpy(graph.label)
+			pred = self.model(graph).data.max(dim=0)[1]
+			correct += pred.eq(target.view_as(pred)).cpu().sum()
+		print('Accuracy: %f' % (correct / len(self.data)))
