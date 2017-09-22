@@ -12,7 +12,7 @@ class Graph(object):
 	def __init__(self, graph, label, feature_map):
 		self.label = np.asarray([label], dtype=int)
 		self.nodes = np.asarray([-1] * len(graph), dtype=int)
-		self.node_feature = np.asarray([-1] * len(graph), dtype=int)
+		self.node_feature = np.zeros((len(graph), len(feature_map) + 1))
 		self.neighbours = np.array([None] * len(graph))
 		self.init(graph, feature_map)
 
@@ -20,7 +20,9 @@ class Graph(object):
 		for node, info in graph.items():
 			self.nodes[node] = node
 			self.neighbours[node] = np.asarray(info['neighbors'], dtype=int)
-			self.node_feature[node] = feature_map[info['label']]
+			self.node_feature[node][feature_map[info['label']]] = 1.0
+			self.node_feature[node][len(feature_map)] = len(self.neighbours[node])
+		pass
 
 
 class Predictor(object):
