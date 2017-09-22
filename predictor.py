@@ -12,7 +12,7 @@ class Graph(object):
 	def __init__(self, graph, label, feature_map):
 		self.label = np.asarray([label], dtype=int)
 		self.nodes = np.asarray([-1] * len(graph), dtype=int)
-		self.node_feature = np.zeros((len(graph), len(feature_map) + 1))
+		self.node_feature = np.zeros((len(graph), len(feature_map) + 1), dtype=np.float32)
 		self.neighbours = np.array([None] * len(graph))
 		self.init(graph, feature_map)
 
@@ -22,7 +22,6 @@ class Graph(object):
 			self.neighbours[node] = np.asarray(info['neighbors'], dtype=int)
 			self.node_feature[node][feature_map[info['label']]] = 1.0
 			self.node_feature[node][len(feature_map)] = len(self.neighbours[node])
-		pass
 
 
 class Predictor(object):
@@ -56,7 +55,7 @@ class Predictor(object):
 		data = []
 		file = 'classification-datasets/' + self.paras.dataset + '/' + self.paras.dataset + '.graph'
 		feature_map, class_map = self.map_feat_class()
-		self.paras.num_feat, self.paras.num_class = len(feature_map), len(class_map)
+		self.paras.num_feat, self.paras.num_class = len(feature_map) + 1, len(class_map)
 		with open(file) as f:
 			graphs = pickle.loads(f.read())
 		for id, graph in graphs['graph'].items():

@@ -25,7 +25,7 @@ class NeuralFingerprint(nn.Module):
 
 	def forward(self, graph):
 		f = Variable(torch.FloatTensor(self.paras.L).zero_(), requires_grad=True)
-		embedding = self.embedding(torch.from_numpy(graph.node_feature))
+		embedding = self.embedding(Variable(torch.from_numpy(graph.node_feature), requires_grad=False))
 		for L in range(self.paras.R):
 			tmp_embedding = []
 			# graph.nodes must be a sorted list
@@ -33,7 +33,7 @@ class NeuralFingerprint(nn.Module):
 				v = embedding[node]
 				for neighbour in graph.neighbours[node]:
 					v = torch.add(v, embedding[neighbour])
-				r = nn.LeakyReLU(self.hidden[L](v))
+				r = nn.LeakyReLU()(self.hidden[L](v))
 				tmp_embedding.append(r)
 				i = F.softmax(self.output_fp[L](r))
 				f = torch.add(f, i)
