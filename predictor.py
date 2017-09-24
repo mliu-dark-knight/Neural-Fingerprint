@@ -63,7 +63,7 @@ class Predictor(object):
 		return data
 
 	def train(self):
-		optimizer = optim.Adam(self.model.parameters(), lr=self.paras.learning_rate)
+		optimizer = optim.Adam(self.model.parameters(), lr=self.paras.learning_rate, weight_decay=self.paras.lambda_r)
 		self.model.train()
 		for _ in tqdm(range(self.paras.epoch), ncols=100):
 			for i in tqdm(range(len(self.data)), ncols=100):

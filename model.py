@@ -33,7 +33,7 @@ class NeuralFingerprint(nn.Module):
 				v = embedding[node]
 				for neighbour in graph.neighbours[node]:
 					v = torch.add(v, embedding[neighbour])
-				r = nn.LeakyReLU()(self.hidden[L](v))
+				r = nn.ELU()(self.hidden[L](v))
 				tmp_embedding.append(r)
 				i = F.softmax(self.output_fp[L](r))
 				f = torch.add(f, i)
